@@ -118,7 +118,7 @@ public class Peggy {
             }
 
             // ===== Unknown command =====
-            printError("OOPS!!! I don't know what that means.");
+            printError("OOPS!!! I don't know what that means :-(");
         }
 
         sc.close();
@@ -143,7 +143,7 @@ public class Peggy {
     private static String parseTodoDesc(String input) {
         String[] parts = input.split(" ", 2);
         if (parts.length < 2 || parts[1].isBlank()) {
-            throw new IllegalArgumentException("Todo needs a description. Example: todo borrow book");
+            throw new IllegalArgumentException("OOPS!!! The description of a todo cannot be empty.");
         }
         return parts[1].trim();
     }
@@ -161,10 +161,10 @@ public class Peggy {
         String by = parts[1].trim();
 
         if (desc.isBlank()) {
-            throw new IllegalArgumentException("Deadline needs a description.");
+            throw new IllegalArgumentException("OOPS!!! The description of a deadline cannot be empty.");
         }
         if (by.isBlank()) {
-            throw new IllegalArgumentException("Deadline needs a /by date/time.");
+            throw new IllegalArgumentException("OOPS!!! The date of a deadline cannot be empty.");
         }
 
         return new String[] { desc, by };
@@ -189,9 +189,9 @@ public class Peggy {
         String from = p2[0].trim();
         String to = p2[1].trim();
 
-        if (desc.isBlank()) throw new IllegalArgumentException("Event needs a description.");
-        if (from.isBlank()) throw new IllegalArgumentException("Event needs a /from time.");
-        if (to.isBlank()) throw new IllegalArgumentException("Event needs a /to time.");
+        if (desc.isBlank()) throw new IllegalArgumentException("OOPS!!! The description of a event cannot be empty.");
+        if (from.isBlank()) throw new IllegalArgumentException("OOPS!!! The 'from time' of a event cannot be empty.");
+        if (to.isBlank()) throw new IllegalArgumentException("OOPS!!! The 'to time' of a event cannot be empty.");
 
         return new String[] { desc, from, to };
     }
