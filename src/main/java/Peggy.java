@@ -41,9 +41,9 @@ public class Peggy {
             }
 
             // ===== Mark =====
-            if (input.startsWith("mark")) {
+            if (input.startsWith("mark ")) {
                 try {
-                    int idx = parseIndex(input, tasks.size()); // 0-based
+                    int idx = parseIndex(input, tasks.size(), "mark"); // 0-based
                     Task t = tasks.get(idx);
                     t.markAsDone();
 
@@ -60,9 +60,9 @@ public class Peggy {
             }
 
             // ===== Unmark =====
-            if (input.startsWith("unmark")) {
+            if (input.startsWith("unmark ")) {
                 try {
-                    int idx = parseIndex(input, tasks.size()); // 0-based
+                    int idx = parseIndex(input, tasks.size(), "unmark"); // 0-based
                     Task t = tasks.get(idx);
                     t.markAsNotDone();
 
@@ -117,6 +117,20 @@ public class Peggy {
                 continue;
             }
 
+            if (input.startsWith("delete ")) {
+                try {
+                    int idx = parseIndex(input, tasks.size(), "delete"); // 0-based
+                    Task t = tasks.get(idx);
+                    tasks.remove(idx);
+                    printDeleted(t, tasks.size());
+                } catch (IllegalArgumentException g) {
+                    printError(g.getMessage());
+                } catch (Exception g) {
+                    printError("Please give a valid task number, e.g. delete 2");
+                }
+                continue;
+            }
+
             // ===== Unknown command =====
             printError("OOPS!!! I don't know what that means :-(");
         }
@@ -127,10 +141,10 @@ public class Peggy {
     // ---------------- Helpers ----------------
 
     // For "mark 2" / "unmark 2"
-    private static int parseIndex(String input, int size) {
+    private static int parseIndex(String input, int size, String cmd) {
         String[] parts = input.trim().split("\\s+");
         if (parts.length < 2 || parts[1].isBlank()) {
-            throw new IllegalArgumentException("Please give a task number, e.g. mark 2");
+            throw new IllegalArgumentException("Please give a task number, e.g. " + cmd + " 2");
         }
         int idx = Integer.parseInt(parts[1]) - 1;
         if (idx < 0 || idx >= size) {
@@ -199,6 +213,14 @@ public class Peggy {
     private static void printAdded(Task t, int size) {
         System.out.println(LINE);
         System.out.println("Got it. I've added this task:");
+        System.out.println("  " + t);
+        System.out.println("Now you have " + size + " tasks in the list.");
+        System.out.println(LINE);
+    }
+
+    private static void printDeleted(Task t, int size) {
+        System.out.println(LINE);
+        System.out.println("Noted. I've removed this task:");
         System.out.println("  " + t);
         System.out.println("Now you have " + size + " tasks in the list.");
         System.out.println(LINE);
