@@ -8,7 +8,8 @@ public class Peggy {
         ArrayList<Task> tasks = new ArrayList<>();
 
         System.out.println(LINE);
-        System.out.println("Hello! I'm Peggy\nWhat can I do for you?");
+        System.out.println("Hello! I'm Peggy");
+        System.out.println("What can I do for you?");
         System.out.println(LINE);
 
         Scanner sc = new Scanner(System.in);
@@ -16,6 +17,7 @@ public class Peggy {
         while (true) {
             String input = sc.nextLine().trim();
 
+            // ===== Exit =====
             if (input.equals("bye")) {
                 System.out.println(LINE);
                 System.out.println("Bye. Hope to see you again soon!");
@@ -23,66 +25,188 @@ public class Peggy {
                 break;
             }
 
+            // ===== List =====
             if (input.equals("list")) {
                 System.out.println(LINE);
-                System.out.println("Here are the tasks in your list:");
-                for (int i = 0; i < tasks.size(); i++) {
-                    System.out.println((i + 1) + "." + tasks.get(i).toStringStatus());
+                if (tasks.isEmpty()) {
+                    System.out.println("Your list is empty.");
+                } else {
+                    System.out.println("Here are the tasks in your list:");
+                    for (int i = 0; i < tasks.size(); i++) {
+                        System.out.println((i + 1) + ". " + tasks.get(i));
+                    }
                 }
                 System.out.println(LINE);
                 continue;
             }
 
-            if (input.startsWith("mark ")) {
+            // ===== Mark =====
+            if (input.startsWith("mark")) {
                 try {
-                    int idx = parseIndex(input); // 0-based
+                    int idx = parseIndex(input, tasks.size()); // 0-based
                     Task t = tasks.get(idx);
                     t.markAsDone();
 
                     System.out.println(LINE);
                     System.out.println("Nice! I've marked this task as done:");
-                    System.out.println("  " + t.toStringStatus());
+                    System.out.println("  " + t);
                     System.out.println(LINE);
+                } catch (IllegalArgumentException e) {
+                    printError(e.getMessage());
                 } catch (Exception e) {
-                    System.out.println(LINE);
-                    System.out.println("Please give a valid task number, e.g. mark 2");
-                    System.out.println(LINE);
+                    printError("Please give a valid task number, e.g. mark 2");
                 }
                 continue;
             }
 
-            if (input.startsWith("unmark ")) {
+            // ===== Unmark =====
+            if (input.startsWith("unmark")) {
                 try {
-                    int idx = parseIndex(input); // 0-based
+                    int idx = parseIndex(input, tasks.size()); // 0-based
                     Task t = tasks.get(idx);
                     t.markAsNotDone();
 
                     System.out.println(LINE);
                     System.out.println("OK, I've marked this task as not done yet:");
-                    System.out.println("  " + t.toStringStatus());
+                    System.out.println("  " + t);
                     System.out.println(LINE);
+                } catch (IllegalArgumentException e) {
+                    printError(e.getMessage());
                 } catch (Exception e) {
-                    System.out.println(LINE);
-                    System.out.println("Please give a valid task number, e.g. unmark 2");
-                    System.out.println(LINE);
+                    printError("Please give a valid task number, e.g. unmark 2");
                 }
                 continue;
             }
 
-            // Otherwise: add a new task
-            Task t = new Task(input);
-            tasks.add(t);
+            // ===== Add: ToDo =====
+            if (input.startsWith("todo")) {
+                try {
+                    String desc = parseTodoDesc(input);
+                    Task t = new ToDo(desc);
+                    tasks.add(t);
+                    printAdded(t, tasks.size());
+                } catch (IllegalArgumentException e) {
+                    printError(e.getMessage());
+                }
+                continue;
+            }
 
-            System.out.println(LINE);
-            System.out.println("added: " + t);
-            System.out.println(LINE);
+            // ===== Add: Deadline =====
+            if (input.startsWith("deadline")) {
+                try {
+                    String[] dl = parseDeadline(input); // [desc, by]
+                    Task t = new Deadline(dl[0], dl[1]);
+                    tasks.add(t);
+                    printAdded(t, tasks.size());
+                } catch (IllegalArgumentException e) {
+                    printError(e.getMessage());
+                }
+                continue;
+            }
+
+            // ===== Add: Event =====
+            if (input.startsWith("event")) {
+                try {
+                    String[] ev = parseEvent(input); // [desc, from, to]
+                    Task t = new Event(ev[0], ev[1], ev[2]);
+                    tasks.add(t);
+                    printAdded(t, tasks.size());
+                } catch (IllegalArgumentException e) {
+                    printError(e.getMessage());
+                }
+                continue;
+            }
+
+            // ===== Unknown command =====
+            printError("OOPS!!! I don't know what that means.");
         }
 
         sc.close();
     }
-    private static int parseIndex(String input) {
-        String[] parts = input.split("\\s+");   // ["mark","2"]
-        int taskNum = Integer.parseInt(parts[1]); // 2
-        return taskNum - 1; // convert to 0-based
+
+    // ---------------- Helpers ----------------
+
+    // For "mark 2" / "unmark 2"
+    private static int parseIndex(String input, int size) {
+        String[] parts = input.trim().split("\\s+");
+        if (parts.length < 2 || parts[1].isBlank()) {
+            throw new IllegalArgumentException("Please give a task number, e.g. mark 2");
+        }
+        int idx = Integer.parseInt(parts[1]) - 1;
+        if (idx < 0 || idx >= size) {
+            throw new IllegalArgumentException("Task number out of range.");
+        }
+        return idx;
+    }
+
+    // For "todo borrow book"
+    private static String parseTodoDesc(String input) {
+        String[] parts = input.split(" ", 2);
+        if (parts.length < 2 || parts[1].isBlank()) {
+            throw new IllegalArgumentException("Todo needs a description. Example: todo borrow book");
+        }
+        return parts[1].trim();
+    }
+
+    // For "deadline return book /by Sunday"
+    private static String[] parseDeadline(String input) {
+        String rest = input.substring("deadline".length()).trim();
+        String[] parts = rest.split(" /by ", 2);
+
+        if (parts.length < 2) {
+            throw new IllegalArgumentException("Deadline format: deadline <desc> /by <when>");
+        }
+
+        String desc = parts[0].trim();
+        String by = parts[1].trim();
+
+        if (desc.isBlank()) {
+            throw new IllegalArgumentException("Deadline needs a description.");
+        }
+        if (by.isBlank()) {
+            throw new IllegalArgumentException("Deadline needs a /by date/time.");
+        }
+
+        return new String[] { desc, by };
+    }
+
+    // For "event meeting /from Mon 2pm /to Mon 4pm"
+    private static String[] parseEvent(String input) {
+        String rest = input.substring("event".length()).trim();
+
+        String[] p1 = rest.split(" /from ", 2);
+        if (p1.length < 2) {
+            throw new IllegalArgumentException("Event format: event <desc> /from <start> /to <end>");
+        }
+
+        String desc = p1[0].trim();
+
+        String[] p2 = p1[1].split(" /to ", 2);
+        if (p2.length < 2) {
+            throw new IllegalArgumentException("Event format: event <desc> /from <start> /to <end>");
+        }
+
+        String from = p2[0].trim();
+        String to = p2[1].trim();
+
+        if (desc.isBlank()) throw new IllegalArgumentException("Event needs a description.");
+        if (from.isBlank()) throw new IllegalArgumentException("Event needs a /from time.");
+        if (to.isBlank()) throw new IllegalArgumentException("Event needs a /to time.");
+
+        return new String[] { desc, from, to };
+    }
+
+    private static void printAdded(Task t, int size) {
+        System.out.println(LINE);
+        System.out.println("Got it. I've added this task:");
+        System.out.println("  " + t);
+        System.out.println("Now you have " + size + " tasks in the list.");
+        System.out.println(LINE);
+    }
+
+    private static void printError(String msg) {
+        System.out.println(LINE);
+        System.out.println(msg);
+        System.out.println(LINE);
     }
 }
