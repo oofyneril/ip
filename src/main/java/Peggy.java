@@ -5,7 +5,13 @@ public class Peggy {
     private static final String LINE = "---------------------------------------------";
 
     public static void main(String[] args) {
-        ArrayList<Task> tasks = new ArrayList<>();
+        Storage storage = new Storage("peggy.txt");
+        ArrayList<Task> tasks;
+        try {
+            tasks = storage.load();
+        } catch (Exception e) {
+            tasks = new ArrayList<>();
+        }
 
         System.out.println(LINE);
         System.out.println("Hello! I'm Peggy");
@@ -52,6 +58,7 @@ public class Peggy {
                         int idx = parseIndex(input, tasks.size(), "mark");
                         Task t = tasks.get(idx);
                         t.markAsDone();
+                        saveQuietly(storage, tasks);
 
                         System.out.println(LINE);
                         System.out.println("Nice! I've marked this task as done:");
@@ -69,6 +76,7 @@ public class Peggy {
                         int idx = parseIndex(input, tasks.size(), "unmark");
                         Task t = tasks.get(idx);
                         t.markAsNotDone();
+                        saveQuietly(storage, tasks);
 
                         System.out.println(LINE);
                         System.out.println("OK, I've marked this task as not done yet:");
@@ -86,6 +94,7 @@ public class Peggy {
                         int idx = parseIndex(input, tasks.size(), "delete");
                         Task t = tasks.get(idx);
                         tasks.remove(idx);
+                        saveQuietly(storage, tasks);
                         printDeleted(t, tasks.size());
                     } catch (IllegalArgumentException e) {
                         printError(e.getMessage());
@@ -99,6 +108,7 @@ public class Peggy {
                         String desc = parseTodoDesc(input);
                         Task t = new ToDo(desc);
                         tasks.add(t);
+                        saveQuietly(storage, tasks);
                         printAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
                         printError(e.getMessage());
@@ -110,6 +120,7 @@ public class Peggy {
                         String[] dl = parseDeadline(input);
                         Task t = new Deadline(dl[0], dl[1]);
                         tasks.add(t);
+                        saveQuietly(storage, tasks);
                         printAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
                         printError(e.getMessage());
@@ -121,6 +132,7 @@ public class Peggy {
                         String[] ev = parseEvent(input);
                         Task t = new Event(ev[0], ev[1], ev[2]);
                         tasks.add(t);
+                        saveQuietly(storage, tasks);
                         printAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
                         printError(e.getMessage());
@@ -223,4 +235,13 @@ public class Peggy {
         System.out.println(msg);
         System.out.println(LINE);
     }
+
+    private static void saveQuietly(Storage storage, ArrayList<Task> tasks) {
+        try {
+            storage.save(tasks);
+        } catch (Exception e) {
+            printError("OOPS!!! I couldn't save your tasks to disk.");
+        }
+    }
+
 }
