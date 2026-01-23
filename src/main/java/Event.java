@@ -8,6 +8,13 @@ public class Event extends Task {
         this.toTime = toTime;
     }
 
+    public String getFromTime() {
+        return fromTime;
+    }
+    public String getToTime() {
+        return toTime;
+    }
+
     public String toString() {
         return "[E]" + super.toString() + " (from: " + this.fromTime + " to: " + this.toTime + ")";
     }
