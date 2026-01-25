@@ -1,30 +1,25 @@
 import java.util.ArrayList;
-import java.util.Scanner;
 
 public class Peggy {
-    private static final String LINE = "---------------------------------------------";
-
     public static void main(String[] args) {
+        UI ui = new UI();
         Storage storage = new Storage("data/peggy.txt");
-        ArrayList<Task> tasks;
+
+        TaskList tasks;
         try {
-            tasks = storage.load();
+            ArrayList<Task> loaded = storage.load();
+            tasks = new TaskList(loaded);
         } catch (Exception e) {
-            tasks = new ArrayList<>();
+            tasks = new TaskList();
         }
 
-        System.out.println(LINE);
-        System.out.println("Hello! I'm Peggy");
-        System.out.println("What can I do for you?");
-        System.out.println(LINE);
-
-        Scanner sc = new Scanner(System.in);
+        ui.showWelcome();
 
         while (true) {
-            String input = sc.nextLine().trim();
+            String input = ui.readCommand();
 
             if (input.isBlank()) {
-                printError("OOPS!!! I don't know what that means :-(");
+                ui.showError("OOPS!!! I don't know what that means :-(");
                 continue;
             }
 
@@ -34,23 +29,12 @@ public class Peggy {
 
             switch (cmd) {
                 case BYE:
-                    System.out.println(LINE);
-                    System.out.println("Bye. Hope to see you again soon!");
-                    System.out.println(LINE);
-                    sc.close();
+                    ui.showBye();
+                    ui.close();
                     return;
 
                 case LIST:
-                    System.out.println(LINE);
-                    if (tasks.isEmpty()) {
-                        System.out.println("Your list is empty.");
-                    } else {
-                        System.out.println("Here are the tasks in your list:");
-                        for (int i = 0; i < tasks.size(); i++) {
-                            System.out.println((i + 1) + ". " + tasks.get(i));
-                        }
-                    }
-                    System.out.println(LINE);
+                    ui.showList(tasks);
                     break;
 
                 case MARK:
@@ -58,16 +42,12 @@ public class Peggy {
                         int idx = Parser.parseIndex(input, tasks.size(), "mark");
                         Task t = tasks.get(idx);
                         t.markAsDone();
-                        saveQuietly(storage, tasks);
-
-                        System.out.println(LINE);
-                        System.out.println("Nice! I've marked this task as done:");
-                        System.out.println("  " + t);
-                        System.out.println(LINE);
+                        saveQuietly(storage, tasks, ui);
+                        ui.showMarked(t);
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     } catch (Exception e) {
-                        printError("Please give a valid task number, e.g. mark 2");
+                        ui.showError("Please give a valid task number, e.g. mark 2");
                     }
                     break;
 
@@ -76,30 +56,25 @@ public class Peggy {
                         int idx = Parser.parseIndex(input, tasks.size(), "unmark");
                         Task t = tasks.get(idx);
                         t.markAsNotDone();
-                        saveQuietly(storage, tasks);
-
-                        System.out.println(LINE);
-                        System.out.println("OK, I've marked this task as not done yet:");
-                        System.out.println("  " + t);
-                        System.out.println(LINE);
+                        saveQuietly(storage, tasks, ui);
+                        ui.showUnmarked(t);
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     } catch (Exception e) {
-                        printError("Please give a valid task number, e.g. unmark 2");
+                        ui.showError("Please give a valid task number, e.g. unmark 2");
                     }
                     break;
 
                 case DELETE:
                     try {
                         int idx = Parser.parseIndex(input, tasks.size(), "delete");
-                        Task t = tasks.get(idx);
-                        tasks.remove(idx);
-                        saveQuietly(storage, tasks);
-                        printDeleted(t, tasks.size());
+                        Task t = tasks.remove(idx);
+                        saveQuietly(storage, tasks, ui);
+                        ui.showDeleted(t, tasks.size());
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     } catch (Exception e) {
-                        printError("Please give a valid task number, e.g. delete 2");
+                        ui.showError("Please give a valid task number, e.g. delete 2");
                     }
                     break;
 
@@ -108,10 +83,10 @@ public class Peggy {
                         String desc = Parser.parseTodoDesc(input);
                         Task t = new ToDo(desc);
                         tasks.add(t);
-                        saveQuietly(storage, tasks);
-                        printAdded(t, tasks.size());
+                        saveQuietly(storage, tasks, ui);
+                        ui.showAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     }
                     break;
 
@@ -120,10 +95,10 @@ public class Peggy {
                         String[] dl = Parser.parseDeadline(input);
                         Task t = new Deadline(dl[0], dl[1]);
                         tasks.add(t);
-                        saveQuietly(storage, tasks);
-                        printAdded(t, tasks.size());
+                        saveQuietly(storage, tasks, ui);
+                        ui.showAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     }
                     break;
 
@@ -132,50 +107,24 @@ public class Peggy {
                         String[] ev = Parser.parseEvent(input);
                         Task t = new Event(ev[0], ev[1], ev[2]);
                         tasks.add(t);
-                        saveQuietly(storage, tasks);
-                        printAdded(t, tasks.size());
+                        saveQuietly(storage, tasks, ui);
+                        ui.showAdded(t, tasks.size());
                     } catch (IllegalArgumentException e) {
-                        printError(e.getMessage());
+                        ui.showError(e.getMessage());
                     }
                     break;
 
                 default:
-                    printError("OOPS!!! I don't know what that means :-(");
+                    ui.showError("OOPS!!! I don't know what that means :-(");
                     break;
             }
         }
     }
-
-    // ---------------- Helpers ----------------
-
-    private static void printAdded(Task t, int size) {
-        System.out.println(LINE);
-        System.out.println("Got it. I've added this task:");
-        System.out.println("  " + t);
-        System.out.println("Now you have " + size + " tasks in the list.");
-        System.out.println(LINE);
-    }
-
-    private static void printDeleted(Task t, int size) {
-        System.out.println(LINE);
-        System.out.println("Noted. I've removed this task:");
-        System.out.println("  " + t);
-        System.out.println("Now you have " + size + " tasks in the list.");
-        System.out.println(LINE);
-    }
-
-    private static void printError(String msg) {
-        System.out.println(LINE);
-        System.out.println(msg);
-        System.out.println(LINE);
-    }
-
-    private static void saveQuietly(Storage storage, ArrayList<Task> tasks) {
+    private static void saveQuietly(Storage storage, TaskList tasks, UI UI) {
         try {
-            storage.save(tasks);
+            storage.save(tasks.asList());
         } catch (Exception e) {
-            printError("OOPS!!! I couldn't save your tasks to disk.");
+            UI.showError("OOPS!!! I couldn't save your tasks to disk.");
         }
     }
-
 }

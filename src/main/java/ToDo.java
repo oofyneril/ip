@@ -8,6 +8,7 @@ public class ToDo extends Task {
         return "T | " + (isDone() ? 1 : 0) + " | " + getDescription();
     }
 
+    @Override
     public String toString() {
         return "[T]" + super.toString();
     }
