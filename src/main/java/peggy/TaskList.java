@@ -1,5 +1,7 @@
+package peggy;
 import java.util.ArrayList;
 import java.util.List;
+import peggy.task.*;
 
 public class TaskList {
     private final ArrayList<Task> tasks;

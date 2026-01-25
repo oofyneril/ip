@@ -1,4 +1,6 @@
+package peggy;
 import java.util.ArrayList;
+import peggy.task.*;
 
 public class Peggy {
     public static void main(String[] args) {

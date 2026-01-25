@@ -1,4 +1,6 @@
+package peggy;
 import java.util.Scanner;
+import peggy.task.*;
 
 public class UI {
     private static final String LINE = "---------------------------------------------";

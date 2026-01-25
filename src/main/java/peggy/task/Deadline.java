@@ -1,4 +1,6 @@
+package peggy.task;
 import java.time.LocalDateTime;
+import peggy.Parser;
 
 public class Deadline extends Task {
     private final LocalDateTime by;

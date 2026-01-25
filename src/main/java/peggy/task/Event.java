@@ -1,4 +1,6 @@
+package peggy.task;
 import java.time.LocalDateTime;
+import peggy.Parser;
 
 public class Event extends Task {
     private final LocalDateTime fromTime;
