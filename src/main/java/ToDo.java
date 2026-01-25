@@ -3,6 +3,11 @@ public class ToDo extends Task {
         super(description);
     }
 
+    @Override
+    public String toFileString() {
+        return "T | " + (isDone() ? 1 : 0) + " | " + getDescription();
+    }
+
     public String toString() {
         return "[T]" + super.toString();
     }
