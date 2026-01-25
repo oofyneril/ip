@@ -7,14 +7,31 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import peggy.task.*;
-
+/**
+ * Handles loading tasks from disk and saving tasks to disk.
+ * <p>
+ *     Uses a simple line-based file format where each line represents one task, e.g.:
+ *     T | 0 | read book
+ *     D | 1 | return book | 2019-12-02T18:00
+ *     E | 0 | meeting | 2019-12-03T10:00 | 2019-12-03T12:00
+ * </p>
+ */
 public class Storage {
     private final Path filePath;
-
+    /**
+     * Creates a storage object that reads/writes tasks from/to a relative file path.
+     *
+     * @param relativePath Relative path to the storage file (e.g., "data/peggy.txt").
+     */
     public Storage(String relativePath) {
         this.filePath = Paths.get(relativePath);
     }
-
+    /**
+     * Loads tasks from the storage file.
+     *
+     * @return An {@link ArrayList} of tasks loaded from disk.
+     * @throws IOException If an I/O error occurs while reading.
+     */
     public ArrayList<Task> load() throws IOException {
         ArrayList<Task> tasks = new ArrayList<>();
         if (!Files.exists(filePath)) {
@@ -66,7 +83,12 @@ public class Storage {
 
         return tasks;
     }
-
+    /**
+     * Saves the given tasks into the storage file, overwriting existing content.
+     *
+     * @param tasks List of tasks to save.
+     * @throws IOException If an I/O error occurs while writing.
+     */
     public void save(List<Task> tasks) throws IOException {
         ArrayList<String> out = new ArrayList<>();
         for (Task task : tasks) {

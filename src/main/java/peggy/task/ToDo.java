@@ -1,5 +1,13 @@
 package peggy.task;
+/**
+ * Represents a todo task (a task with only a description and done status).
+ */
 public class ToDo extends Task {
+    /**
+     * Creates a todo task with the given description.
+     *
+     * @param description Todo description.
+     */
     public ToDo(String description) {
         super(description);
     }

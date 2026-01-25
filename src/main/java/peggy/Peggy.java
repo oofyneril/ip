@@ -2,7 +2,19 @@ package peggy;
 import java.util.ArrayList;
 import peggy.task.*;
 
+/**
+ * Entry point of the Peggy chatbot application
+ * <p>
+ *     Loads tasks from storage, then repeatedly reads user commands, parses them,
+ *     executes the requested action, and saves updates back to disk.
+ * </p>
+ */
 public class Peggy {
+    /**
+     * Starts the chatbot program.
+     *
+     * @param args Command-line arguments (not used).
+     */
     public static void main(String[] args) {
         UI ui = new UI();
         Storage storage = new Storage("data/peggy.txt");
