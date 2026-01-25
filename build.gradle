@@ -1,3 +1,4 @@
+import java.io.FileInputStream
 plugins {
     id 'java'
     id 'application'
@@ -28,14 +29,18 @@ test {
 }
 
 application {
-    mainClass.set("seedu.duke.Duke")
+    mainClass.set("peggy.Peggy")
 }
 
 shadowJar {
-    archiveBaseName = "duke"
+    archiveBaseName = "peggy"
     archiveClassifier = null
 }
 
 run{
-    standardInput = System.in
+    if (project.hasProperty("input")) {
+        standardInput = new FileInputStream(project.property("input").toString())
+    } else {
+        standardInput = System.in
+    }
 }
