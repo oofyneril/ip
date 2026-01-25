@@ -27,6 +27,11 @@ public class Task {
         return isDone;
     }
 
+    // for Storage
+    public String toFileString() {
+        return "T | " + (isDone ? 1 : 0) + " | " + description;
+    }
+
     @Override
     public String toString() {
         return "[" + getStatusIcon() + "] " + description;
