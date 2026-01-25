@@ -128,6 +128,16 @@ public class Peggy {
                     }
                     break;
 
+                case FIND:
+                    try {
+                        String keyword = Parser.parseFindKeyword(input);
+                        TaskList matches = tasks.find(keyword);
+                        ui.showFindResults(matches);
+                    } catch (IllegalArgumentException e) {
+                        ui.showError(e.getMessage());
+                    }
+                    break;
+
                 default:
                     ui.showError("OOPS!!! I don't know what that means :-(");
                     break;
