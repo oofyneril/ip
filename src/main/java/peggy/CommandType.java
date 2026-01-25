@@ -1,7 +1,7 @@
 package peggy;
 
 public enum CommandType {
-    BYE, LIST, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, UNKNOWN;
+    BYE, LIST, MARK, UNMARK, TODO, DEADLINE, EVENT, DELETE, FIND, UNKNOWN;
 
     public static CommandType from(String word) {
         if (word == null) {
@@ -16,6 +16,7 @@ public enum CommandType {
             case "deadline": return DEADLINE;
             case "event": return EVENT;
             case "delete": return DELETE;
+            case "find": return FIND;
             default: return UNKNOWN;
         }
     }

@@ -58,6 +58,16 @@ public class UI {
         println(LINE);
     }
 
+    public void showFindResults(TaskList matches) {
+        println(LINE);
+        println("Here are the matching tasks in your list:");
+        for (int i = 0; i < matches.size(); i++) {
+            // match sample format: 1.[T][X] ...
+            println((i + 1) + "." + matches.get(i));
+        }
+        println(LINE);
+    }
+
     public void showMarked(Task t) {
         println(LINE);
         println("Nice! I've marked this task as done:");

@@ -27,6 +27,14 @@ public class Parser {
         }
     }
 
+    public static String parseFindKeyword(String input) {
+        String[] parts = input.split("\\s+", 2);
+        if (parts.length < 2 || parts[1].isBlank()) {
+            throw new IllegalArgumentException("OOPS!!! The keyword of a find command cannot be empty.");
+        }
+        return parts[1].trim();
+    }
+
     public static LocalDateTime parseDateTime(String raw) {
         String s = raw.trim();
 
