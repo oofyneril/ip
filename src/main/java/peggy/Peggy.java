@@ -1,154 +1,248 @@
 package peggy;
+
 import java.util.ArrayList;
-import peggy.task.*;
+
+import peggy.task.Deadline;
+import peggy.task.Event;
+import peggy.task.Task;
+import peggy.task.ToDo;
 
 /**
- * Entry point of the Peggy chatbot application
- * <p>
- *     Loads tasks from storage, then repeatedly reads user commands, parses them,
- *     executes the requested action, and saves updates back to disk.
- * </p>
+ * Core logic for Peggy. GUI/CLI should call {@link #getResponse(String)}.
  */
 public class Peggy {
-    /**
-     * Starts the chatbot program.
-     *
-     * @param args Command-line arguments (not used).
-     */
-    public static void main(String[] args) {
-        UI ui = new UI();
-        Storage storage = new Storage("data/peggy.txt");
+    private static final String LINE = "---------------------------------------------";
 
-        TaskList tasks;
+    private final Storage storage;
+    private final TaskList tasks;
+
+    public Peggy(String filePath) {
+        this.storage = new Storage(filePath);
+
+        TaskList loaded;
         try {
-            ArrayList<Task> loaded = storage.load();
-            tasks = new TaskList(loaded);
+            ArrayList<Task> list = storage.load();
+            loaded = new TaskList(list);
         } catch (Exception e) {
-            tasks = new TaskList();
+            loaded = new TaskList();
+        }
+        this.tasks = loaded;
+    }
+
+    public String getWelcomeMessage() {
+        return LINE + "\n"
+                + "Hello! I'm Peggy\n"
+                + "What can I do for you?\n"
+                + LINE;
+    }
+
+    public boolean isExitCommand(String input) {
+        if (input == null) {
+            return false;
+        }
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            return false;
+        }
+        String cmdWord = trimmed.split("\\s+")[0];
+        return CommandType.from(cmdWord) == CommandType.BYE;
+    }
+
+    public String getResponse(String input) {
+        if (input == null) {
+            return formatError("OOPS!!! I don't know what that means :-(");
         }
 
-        ui.showWelcome();
+        String trimmed = input.trim();
+        if (trimmed.isBlank()) {
+            return formatError("OOPS!!! I don't know what that means :-(");
+        }
 
-        while (true) {
-            String input = ui.readCommand();
+        String cmdWord = trimmed.split("\\s+", 2)[0];
+        CommandType cmd = CommandType.from(cmdWord);
 
-            if (input.isBlank()) {
-                ui.showError("OOPS!!! I don't know what that means :-(");
-                continue;
-            }
+        switch (cmd) {
+            case BYE:
+                return LINE + "\n"
+                        + "Bye. Hope to see you again soon!\n"
+                        + LINE;
 
-            String[] parts = input.split("\\s+", 2);
-            String cmdWord = parts[0];
-            CommandType cmd = CommandType.from(cmdWord);
+            case LIST:
+                return formatList();
 
-            switch (cmd) {
-                case BYE:
-                    ui.showBye();
-                    ui.close();
-                    return;
+            case MARK:
+                return handleMark(trimmed);
 
-                case LIST:
-                    ui.showList(tasks);
-                    break;
+            case UNMARK:
+                return handleUnmark(trimmed);
 
-                case MARK:
-                    try {
-                        int idx = Parser.parseIndex(input, tasks.size(), "mark");
-                        Task t = tasks.get(idx);
-                        t.markAsDone();
-                        saveQuietly(storage, tasks, ui);
-                        ui.showMarked(t);
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    } catch (Exception e) {
-                        ui.showError("Please give a valid task number, e.g. mark 2");
-                    }
-                    break;
+            case DELETE:
+                return handleDelete(trimmed);
 
-                case UNMARK:
-                    try {
-                        int idx = Parser.parseIndex(input, tasks.size(), "unmark");
-                        Task t = tasks.get(idx);
-                        t.markAsNotDone();
-                        saveQuietly(storage, tasks, ui);
-                        ui.showUnmarked(t);
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    } catch (Exception e) {
-                        ui.showError("Please give a valid task number, e.g. unmark 2");
-                    }
-                    break;
+            case TODO:
+                return handleTodo(trimmed);
 
-                case DELETE:
-                    try {
-                        int idx = Parser.parseIndex(input, tasks.size(), "delete");
-                        Task t = tasks.remove(idx);
-                        saveQuietly(storage, tasks, ui);
-                        ui.showDeleted(t, tasks.size());
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    } catch (Exception e) {
-                        ui.showError("Please give a valid task number, e.g. delete 2");
-                    }
-                    break;
+            case DEADLINE:
+                return handleDeadline(trimmed);
 
-                case TODO:
-                    try {
-                        String desc = Parser.parseTodoDesc(input);
-                        Task t = new ToDo(desc);
-                        tasks.add(t);
-                        saveQuietly(storage, tasks, ui);
-                        ui.showAdded(t, tasks.size());
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
+            case EVENT:
+                return handleEvent(trimmed);
 
-                case DEADLINE:
-                    try {
-                        String[] dl = Parser.parseDeadline(input);
-                        Task t = new Deadline(dl[0], dl[1]);
-                        tasks.add(t);
-                        saveQuietly(storage, tasks, ui);
-                        ui.showAdded(t, tasks.size());
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
+            case FIND:
+                return handleFind(trimmed);
 
-                case EVENT:
-                    try {
-                        String[] ev = Parser.parseEvent(input);
-                        Task t = new Event(ev[0], ev[1], ev[2]);
-                        tasks.add(t);
-                        saveQuietly(storage, tasks, ui);
-                        ui.showAdded(t, tasks.size());
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-
-                case FIND:
-                    try {
-                        String keyword = Parser.parseFindKeyword(input);
-                        TaskList matches = tasks.find(keyword);
-                        ui.showFindResults(matches);
-                    } catch (IllegalArgumentException e) {
-                        ui.showError(e.getMessage());
-                    }
-                    break;
-
-                default:
-                    ui.showError("OOPS!!! I don't know what that means :-(");
-                    break;
-            }
+            default:
+                return formatError("OOPS!!! I don't know what that means :-(");
         }
     }
-    private static void saveQuietly(Storage storage, TaskList tasks, UI UI) {
+
+    private String formatList() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(LINE).append("\n");
+        if (tasks.isEmpty()) {
+            sb.append("Your list is empty.\n");
+        } else {
+            sb.append("Here are the tasks in your list:\n");
+            for (int i = 0; i < tasks.size(); i++) {
+                sb.append(i + 1).append(". ").append(tasks.get(i)).append("\n");
+            }
+        }
+        sb.append(LINE);
+        return sb.toString();
+    }
+
+    private String handleMark(String input) {
+        try {
+            int idx = Parser.parseIndex(input, tasks.size(), "mark");
+            Task t = tasks.get(idx);
+            t.markAsDone();
+            saveQuietly();
+
+            return LINE + "\n"
+                    + "Nice! I've marked this task as done:\n"
+                    + "  " + t + "\n"
+                    + LINE;
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        } catch (Exception e) {
+            return formatError("Please give a valid task number, e.g. mark 2");
+        }
+    }
+
+    private String handleUnmark(String input) {
+        try {
+            int idx = Parser.parseIndex(input, tasks.size(), "unmark");
+            Task t = tasks.get(idx);
+            t.markAsNotDone();
+            saveQuietly();
+
+            return LINE + "\n"
+                    + "OK, I've marked this task as not done yet:\n"
+                    + "  " + t + "\n"
+                    + LINE;
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        } catch (Exception e) {
+            return formatError("Please give a valid task number, e.g. unmark 2");
+        }
+    }
+
+    private String handleDelete(String input) {
+        try {
+            int idx = Parser.parseIndex(input, tasks.size(), "delete");
+            Task t = tasks.remove(idx);
+            saveQuietly();
+
+            return LINE + "\n"
+                    + "Noted. I've removed this task:\n"
+                    + "  " + t + "\n"
+                    + "Now you have " + tasks.size() + " tasks in the list.\n"
+                    + LINE;
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        } catch (Exception e) {
+            return formatError("Please give a valid task number, e.g. delete 2");
+        }
+    }
+
+    private String handleTodo(String input) {
+        try {
+            String desc = Parser.parseTodoDesc(input);
+            Task t = new ToDo(desc);
+            tasks.add(t);
+            saveQuietly();
+
+            return formatAdded(t);
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        }
+    }
+
+    private String handleDeadline(String input) {
+        try {
+            String[] dl = Parser.parseDeadline(input);
+            Task t = new Deadline(dl[0], dl[1]);
+            tasks.add(t);
+            saveQuietly();
+
+            return formatAdded(t);
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        }
+    }
+
+    private String handleEvent(String input) {
+        try {
+            String[] ev = Parser.parseEvent(input);
+            Task t = new Event(ev[0], ev[1], ev[2]);
+            tasks.add(t);
+            saveQuietly();
+
+            return formatAdded(t);
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        }
+    }
+
+    private String handleFind(String input) {
+        try {
+            String keyword = Parser.parseFindKeyword(input);
+            TaskList matches = tasks.find(keyword);
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(LINE).append("\n");
+            sb.append("Here are the matching tasks in your list:\n");
+            if (matches.isEmpty()) {
+                sb.append("(none)\n");
+            } else {
+                for (int i = 0; i < matches.size(); i++) {
+                    sb.append(i + 1).append(". ").append(matches.get(i)).append("\n");
+                }
+            }
+            sb.append(LINE);
+            return sb.toString();
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        }
+    }
+
+    private String formatAdded(Task t) {
+        return LINE + "\n"
+                + "Got it. I've added this task:\n"
+                + "  " + t + "\n"
+                + "Now you have " + tasks.size() + " tasks in the list.\n"
+                + LINE;
+    }
+
+    private String formatError(String msg) {
+        return LINE + "\n" + msg + "\n" + LINE;
+    }
+
+    private void saveQuietly() {
         try {
             storage.save(tasks.asList());
         } catch (Exception e) {
-            UI.showError("OOPS!!! I couldn't save your tasks to disk.");
+            // In GUI, just show an error response
         }
     }
 }
