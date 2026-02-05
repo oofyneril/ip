@@ -91,8 +91,14 @@ public class Peggy {
             case FIND:
                 return handleFind(trimmed);
 
+            case HELP:
+                return formatHelp();
+
+            case HELLO:
+                return formatHello();
+
             default:
-                return formatError("OOPS!!! I don't know what that means :-(");
+                return formatError("I don't understand that. Try 'help' to see commands.");
         }
     }
 
@@ -111,9 +117,33 @@ public class Peggy {
         return sb.toString();
     }
 
+    private String formatHello() {
+        return LINE + "\n"
+                + "Hi! 🙂\n"
+                + "Type 'help' to see what I can do.\n"
+                + LINE;
+    }
+
+    private String formatHelp() {
+        return LINE + "\n"
+                + "Here are the commands you can use:\n"
+                + "  list\n"
+                + "  todo <description>\n"
+                + "  deadline <description> /by <time>\n"
+                + "  event <description> /from <time> /to <time>\n"
+                + "  mark <task number>\n"
+                + "  unmark <task number>\n"
+                + "  delete <task number>\n"
+                + "  find <keyword>\n"
+                + "  bye\n"
+                + LINE;
+    }
+
+
     private String handleMark(String input) {
         try {
             int idx = Parser.parseIndex(input, tasks.size(), "mark");
+            assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
             Task t = tasks.get(idx);
             t.markAsDone();
             saveQuietly();
@@ -132,6 +162,7 @@ public class Peggy {
     private String handleUnmark(String input) {
         try {
             int idx = Parser.parseIndex(input, tasks.size(), "unmark");
+            assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
             Task t = tasks.get(idx);
             t.markAsNotDone();
             saveQuietly();
@@ -150,6 +181,7 @@ public class Peggy {
     private String handleDelete(String input) {
         try {
             int idx = Parser.parseIndex(input, tasks.size(), "delete");
+            assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
             Task t = tasks.remove(idx);
             saveQuietly();
 
@@ -181,6 +213,7 @@ public class Peggy {
     private String handleDeadline(String input) {
         try {
             String[] dl = Parser.parseDeadline(input);
+            assert dl.length == 2 : "Deadline parse should return [desc, by]";
             Task t = new Deadline(dl[0], dl[1]);
             tasks.add(t);
             saveQuietly();
@@ -194,6 +227,7 @@ public class Peggy {
     private String handleEvent(String input) {
         try {
             String[] ev = Parser.parseEvent(input);
+            assert ev.length == 3 : "Event parse should return [desc, from, to]";
             Task t = new Event(ev[0], ev[1], ev[2]);
             tasks.add(t);
             saveQuietly();

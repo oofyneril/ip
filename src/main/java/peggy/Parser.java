@@ -1,12 +1,11 @@
 package peggy;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
-import peggy.task.*;
-
 
 public class Parser {
 
@@ -15,8 +14,6 @@ public class Parser {
 
     private static final DateTimeFormatter OUT_DATE_TIME =
             DateTimeFormatter.ofPattern("MMM dd yyyy HH:mm", Locale.ENGLISH);
-
-    // --- Level 8 parsing ---
 
     // Minimal requirement: accepts yyyy-MM-dd
     public static LocalDate parseDate(String raw) {
@@ -41,25 +38,21 @@ public class Parser {
         // from Storage: 2019-12-02T18:00
         try { return LocalDateTime.parse(s); } catch (DateTimeParseException ignored) {}
 
-        // user input: 2/12/2019 1800  (2 Dec 2019, 18:00)
-        try {
-            return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("d/M/yyyy HHmm"));
-        } catch (DateTimeParseException ignored) {}
+        // user input: 2/12/2019 1800
+        try { return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("d/M/yyyy HHmm")); }
+        catch (DateTimeParseException ignored) {}
 
         // also allow: 2/12/2019 18:00
-        try {
-            return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("d/M/yyyy HH:mm"));
-        } catch (DateTimeParseException ignored) {}
+        try { return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("d/M/yyyy HH:mm")); }
+        catch (DateTimeParseException ignored) {}
 
         // also allow: 2019-12-02 1800
-        try {
-            return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm"));
-        } catch (DateTimeParseException ignored) {}
+        try { return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd HHmm")); }
+        catch (DateTimeParseException ignored) {}
 
         // also allow: 2019-12-02 18:00
-        try {
-            return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-        } catch (DateTimeParseException ignored) {}
+        try { return LocalDateTime.parse(s, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")); }
+        catch (DateTimeParseException ignored) {}
 
         // date only -> start of day
         try { return LocalDate.parse(s, DateTimeFormatter.ofPattern("d/M/yyyy")).atStartOfDay(); }
@@ -95,7 +88,14 @@ public class Parser {
         if (parts.length < 2 || parts[1].isBlank()) {
             throw new IllegalArgumentException("Please give a task number, e.g. " + cmd + " 2");
         }
-        int idx = Integer.parseInt(parts[1]) - 1; // convert to 0-based
+
+        int idx;
+        try {
+            idx = Integer.parseInt(parts[1]) - 1; // convert to 0-based
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Please give a valid task number, e.g. " + cmd + " 2");
+        }
+
         if (idx < 0 || idx >= size) {
             throw new IllegalArgumentException("Task number out of range.");
         }
@@ -119,16 +119,19 @@ public class Parser {
         }
 
         String desc = parts[0].trim();
-        String by = parts[1].trim();
+        String byRaw = parts[1].trim();
 
         if (desc.isBlank()) {
             throw new IllegalArgumentException("OOPS!!! The description of a deadline cannot be empty.");
         }
-        if (by.isBlank()) {
-            throw new IllegalArgumentException("OOPS!!! The date of a deadline cannot be empty.");
+        if (byRaw.isBlank()) {
+            throw new IllegalArgumentException("OOPS!!! The date/time of a deadline cannot be empty.");
         }
 
-        return new String[] { desc, by };
+        // validate
+        parseDateTime(byRaw);
+
+        return new String[] { desc, byRaw };
     }
 
     public static String[] parseEvent(String input) {
@@ -146,19 +149,26 @@ public class Parser {
             throw new IllegalArgumentException("Event format: event <desc> /from <start> /to <end>");
         }
 
-        String from = p2[0].trim();
-        String to = p2[1].trim();
+        String fromRaw = p2[0].trim();
+        String toRaw = p2[1].trim();
 
         if (desc.isBlank()) {
-            throw new IllegalArgumentException("OOPS!!! The description of a event cannot be empty.");
+            throw new IllegalArgumentException("OOPS!!! The description of an event cannot be empty.");
         }
-        if (from.isBlank()) {
-            throw new IllegalArgumentException("OOPS!!! The 'from time' of a event cannot be empty.");
+        if (fromRaw.isBlank()) {
+            throw new IllegalArgumentException("OOPS!!! The 'from time' of an event cannot be empty.");
         }
-        if (to.isBlank()) {
-            throw new IllegalArgumentException("OOPS!!! The 'to time' of a event cannot be empty.");
+        if (toRaw.isBlank()) {
+            throw new IllegalArgumentException("OOPS!!! The 'to time' of an event cannot be empty.");
         }
 
-        return new String[] { desc, from, to };
+        LocalDateTime from = parseDateTime(fromRaw);
+        LocalDateTime to = parseDateTime(toRaw);
+
+        if (from.isAfter(to)) {
+            throw new IllegalArgumentException("Event time invalid: /from must be earlier than /to.");
+        }
+
+        return new String[] { desc, fromRaw, toRaw };
     }
 }
