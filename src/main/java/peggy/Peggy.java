@@ -139,6 +139,7 @@ public class Peggy {
                 "  unmark <task number>",
                 "  delete <task number>",
                 "  find <keyword>",
+                "  priority <task number> <priority>",
                 "  bye"
         );
     }
