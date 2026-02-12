@@ -171,4 +171,23 @@ public class Parser {
 
         return new String[] { desc, fromRaw, toRaw };
     }
+    /**
+     * Parses a priority command into [index, Priority].
+     *
+     * @param input Full command string.
+     * @param size Task list size.
+     * @return Object array containing index (int) and Priority.
+     */
+    public static Object[] parsePriority(String input, int size) {
+        String[] parts = input.trim().split("\\s+");
+        if (parts.length < 3) {
+            throw new IllegalArgumentException(
+                    "Format: priority <task number> <high|med|low|none> (e.g. priority 2 high)"
+            );
+        }
+
+        int idx = parseIndex(input, size, "priority");
+        Priority p = Priority.parse(parts[2]);
+        return new Object[]{idx, p};
+    }
 }
