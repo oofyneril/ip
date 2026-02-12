@@ -1,4 +1,5 @@
 package peggy.task;
+import peggy.task.Priority;
 /**
  * Represents a todo task (a task with only a description and done status).
  */
@@ -14,7 +15,7 @@ public class ToDo extends Task {
 
     @Override
     public String toFileString() {
-        return "T | " + (isDone() ? 1 : 0) + " | " + getDescription();
+        return "T | " + (isDone() ? 1 : 0) + " | " + getPriority().toStorageToken() + " | " + getDescription();
     }
 
     @Override

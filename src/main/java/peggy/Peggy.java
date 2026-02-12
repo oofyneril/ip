@@ -6,16 +6,25 @@ import peggy.task.Deadline;
 import peggy.task.Event;
 import peggy.task.Task;
 import peggy.task.ToDo;
-
+import peggy.Priority;
 /**
- * Core logic for Peggy. GUI/CLI should call {@link #getResponse(String)}.
+ * Core logic for Peggy.
  */
 public class Peggy {
     private static final String LINE = "---------------------------------------------";
+    private static final String MSG_UNKNOWN = "OOPS!!! I don't know what that means :-(";
+    private static final String MSG_TRY_HELP = "I don't understand that. Try 'help' to see commands.";
+    private static final String MSG_PRIORITY_FORMAT =
+            "Format: priority <task number> <high|med|low|none> (e.g. priority 2 high)";
 
     private final Storage storage;
     private final TaskList tasks;
 
+    /**
+     * Creates a Peggy instance backed by the given storage file path.
+     *
+     * @param filePath Relative path to the storage file.
+     */
     public Peggy(String filePath) {
         this.storage = new Storage(filePath);
 
@@ -29,6 +38,11 @@ public class Peggy {
         this.tasks = loaded;
     }
 
+    /**
+     * Returns the welcome message.
+     *
+     * @return Welcome message string.
+     */
     public String getWelcomeMessage() {
         return LINE + "\n"
                 + "Hello! I'm Peggy\n"
@@ -36,6 +50,12 @@ public class Peggy {
                 + LINE;
     }
 
+    /**
+     * Returns true if the input is an exit command.
+     *
+     * @param input User input.
+     * @return True if it is a bye command.
+     */
     public boolean isExitCommand(String input) {
         if (input == null) {
             return false;
@@ -48,16 +68,18 @@ public class Peggy {
         return CommandType.from(cmdWord) == CommandType.BYE;
     }
 
+    /**
+     * Processes user input and returns Peggy's response.
+     *
+     * @param input User input.
+     * @return Response string.
+     */
     public String getResponse(String input) {
-        if (input == null) {
-            return formatError("OOPS!!! I don't know what that means :-(");
+        if (input == null || input.trim().isBlank()) {
+            return formatError(MSG_UNKNOWN);
         }
 
         String trimmed = input.trim();
-        if (trimmed.isBlank()) {
-            return formatError("OOPS!!! I don't know what that means :-(");
-        }
-
         String cmdWord = trimmed.split("\\s+", 2)[0];
         CommandType cmd = CommandType.from(cmdWord);
 
@@ -91,6 +113,9 @@ public class Peggy {
             case FIND:
                 return handleFind(trimmed);
 
+            case PRIORITY:
+                return handlePriority(trimmed);
+
             case HELP:
                 return formatHelp();
 
@@ -98,7 +123,7 @@ public class Peggy {
                 return formatHello();
 
             default:
-                return formatError("I don't understand that. Try 'help' to see commands.");
+                return formatError(MSG_TRY_HELP);
         }
     }
 
@@ -135,10 +160,33 @@ public class Peggy {
                 + "  unmark <task number>\n"
                 + "  delete <task number>\n"
                 + "  find <keyword>\n"
+                + "  priority <task number> <high|med|low|none>\n"
                 + "  bye\n"
                 + LINE;
     }
 
+    private String handlePriority(String input) {
+        try {
+            Object[] parsed = Parser.parsePriority(input, tasks.size());
+            int idx = (int) parsed[0];
+            Priority p = (Priority) parsed[1];
+
+            assert idx >= 0 && idx < tasks.size() : "Priority index out of bounds: " + idx;
+
+            Task t = tasks.get(idx);
+            t.setPriority(p);
+            saveQuietly();
+
+            return LINE + "\n"
+                    + "OK. I've set the priority:\n"
+                    + "  " + t + "\n"
+                    + LINE;
+        } catch (IllegalArgumentException e) {
+            return formatError(e.getMessage());
+        } catch (Exception e) {
+            return formatError(MSG_PRIORITY_FORMAT);
+        }
+    }
 
     private String handleMark(String input) {
         try {

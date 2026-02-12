@@ -1,12 +1,16 @@
 package peggy.task;
+
 import java.time.LocalDateTime;
+
 import peggy.Parser;
+
 /**
  * Represents an event task with a start and end date/time.
  */
 public class Event extends Task {
     private final LocalDateTime fromTime;
     private final LocalDateTime toTime;
+
     /**
      * Creates an event task.
      *
@@ -19,18 +23,20 @@ public class Event extends Task {
         this.fromTime = Parser.parseDateTime(fromTime);
         this.toTime = Parser.parseDateTime(toTime);
     }
+
     /**
      * Returns the start date/time of the event.
      *
-     * @return Start date/time (type depends on your implementation).
+     * @return Start date/time.
      */
     public LocalDateTime getFromTime() {
         return fromTime;
     }
+
     /**
      * Returns the end date/time of the event.
      *
-     * @return End date/time (type depends on your implementation).
+     * @return End date/time.
      */
     public LocalDateTime getToTime() {
         return toTime;
@@ -38,8 +44,11 @@ public class Event extends Task {
 
     @Override
     public String toFileString() {
-        return "E | " + (isDone() ? 1 : 0) + " | " + getDescription()
-                + " | " + fromTime + " | " + toTime;
+        return "E | " + (isDone() ? 1 : 0)
+                + " | " + getPriority().toStorageToken()
+                + " | " + getDescription()
+                + " | " + fromTime
+                + " | " + toTime;
     }
 
     @Override

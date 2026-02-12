@@ -1,74 +1,64 @@
 package peggy.task;
+import peggy.task.Priority;
+
 /**
- * Represents a task in the chatbot.
- * <p>
- *     A task has a description and a completion status. Subclasses may add extra fields
- *     such as due date/time (Deadline) or start/end time (Event).
- * </p>
+ * Represents a task with a description, done status, and optional priority.
  */
-public class Task {
+public abstract class Task {
     private final String description;
     private boolean isDone;
+    private Priority priority;
+
     /**
-     * Creates a task with the given description. The task is initially not done.
+     * Creates a task with the given description.
      *
      * @param description Task description.
      */
     public Task(String description) {
         this.description = description;
         this.isDone = false;
+        this.priority = Priority.NONE;
     }
-    /**
-     * Marks this task as done.
-     */
-    public void markAsDone() {
-        this.isDone = true;
-    }
-    /**
-     * Marks this task as not done.
-     */
-    public void markAsNotDone() {
-        this.isDone = false;
-    }
-    /**
-     * Returns the status icon used in printing (X for done, blank for not done).
-     *
-     * @return "X" if done, otherwise " ".
-     */
-    public String getStatusIcon() {
-        return isDone ? "X" : " ";
-    }
-    /**
-     * Returns the description of the task.
-     *
-     * @return Task description.
-     */
+
     public String getDescription() {
         return description;
     }
-    /**
-     * Returns whether the task is marked as done.
-     *
-     * @return True if done, false otherwise.
-     */
+
     public boolean isDone() {
         return isDone;
     }
-    /**
-     * Converts the task into a line to be stored in the save file.
-     *
-     * @return A file-format string representing this task.
-     */
-    public String toFileString() {
-        return "T | " + (isDone ? 1 : 0) + " | " + description;
+
+    public void markAsDone() {
+        isDone = true;
     }
+
+    public void markAsNotDone() {
+        isDone = false;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        if (priority == null) {
+            this.priority = Priority.NONE;
+            return;
+        }
+        this.priority = priority;
+    }
+
     /**
-     * Returns the human-readable representation of this task for display to the user.
+     * Converts this task into a line for saving to file.
      *
-     * @return Display string.
+     * @return File string.
      */
+    public abstract String toFileString();
+
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        String status = isDone ? "X" : " ";
+        String prioritySuffix = priority == Priority.NONE ? "" : " (P:" + priority + ")";
+        return "[" + status + "] " + description + prioritySuffix;
     }
 }
