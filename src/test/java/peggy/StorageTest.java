@@ -1,6 +1,9 @@
 package peggy;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,7 +13,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import peggy.task.*; // Task, ToDo, Deadline, Event
+import peggy.task.Deadline;
+import peggy.task.Event;
+import peggy.task.Task;
+import peggy.task.ToDo;
 
 public class StorageTest {
 

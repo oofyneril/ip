@@ -5,7 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
-
+/**
+ * JavaFX entry point for the Peggy GUI.
+ */
 public class MainApp extends Application {
     private static final String SAVE_PATH = "data/peggy.txt";
 
