@@ -1,79 +1,65 @@
 package peggy;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import peggy.task.Deadline;
 import peggy.task.Event;
 import peggy.task.Task;
 import peggy.task.ToDo;
-import peggy.Priority;
+
 /**
- * Core logic for Peggy.
+ * Core logic for Peggy. GUI/CLI should call {@link #getResponse(String)}.
  */
 public class Peggy {
     private static final String LINE = "---------------------------------------------";
+
     private static final String MSG_UNKNOWN = "OOPS!!! I don't know what that means :-(";
     private static final String MSG_TRY_HELP = "I don't understand that. Try 'help' to see commands.";
-    private static final String MSG_PRIORITY_FORMAT =
-            "Format: priority <task number> <high|med|low|none> (e.g. priority 2 high)";
+
+    private static final String CMD_MARK = "mark";
+    private static final String CMD_UNMARK = "unmark";
+    private static final String CMD_DELETE = "delete";
 
     private final Storage storage;
     private final TaskList tasks;
 
-    /**
-     * Creates a Peggy instance backed by the given storage file path.
-     *
-     * @param filePath Relative path to the storage file.
-     */
     public Peggy(String filePath) {
         this.storage = new Storage(filePath);
 
         TaskList loaded;
         try {
             ArrayList<Task> list = storage.load();
+            Objects.requireNonNull(list, "Storage.load() should not return null");
             loaded = new TaskList(list);
         } catch (Exception e) {
             loaded = new TaskList();
         }
         this.tasks = loaded;
+        assert this.tasks != null : "TaskList should be initialized";
     }
 
-    /**
-     * Returns the welcome message.
-     *
-     * @return Welcome message string.
-     */
     public String getWelcomeMessage() {
-        return LINE + "\n"
-                + "Hello! I'm Peggy\n"
-                + "What can I do for you?\n"
-                + LINE;
+        return boxLines(
+                "Hello! I'm Peggy",
+                "What can I do for you?"
+        );
     }
 
-    /**
-     * Returns true if the input is an exit command.
-     *
-     * @param input User input.
-     * @return True if it is a bye command.
-     */
     public boolean isExitCommand(String input) {
         if (input == null) {
             return false;
         }
+
         String trimmed = input.trim();
         if (trimmed.isEmpty()) {
             return false;
         }
+
         String cmdWord = trimmed.split("\\s+")[0];
         return CommandType.from(cmdWord) == CommandType.BYE;
     }
 
-    /**
-     * Processes user input and returns Peggy's response.
-     *
-     * @param input User input.
-     * @return Response string.
-     */
     public String getResponse(String input) {
         if (input == null || input.trim().isBlank()) {
             return formatError(MSG_UNKNOWN);
@@ -85,9 +71,7 @@ public class Peggy {
 
         switch (cmd) {
             case BYE:
-                return LINE + "\n"
-                        + "Bye. Hope to see you again soon!\n"
-                        + LINE;
+                return boxLines("Bye. Hope to see you again soon!");
 
             case LIST:
                 return formatList();
@@ -113,9 +97,6 @@ public class Peggy {
             case FIND:
                 return handleFind(trimmed);
 
-            case PRIORITY:
-                return handlePriority(trimmed);
-
             case HELP:
                 return formatHelp();
 
@@ -128,120 +109,91 @@ public class Peggy {
     }
 
     private String formatList() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(LINE).append("\n");
         if (tasks.isEmpty()) {
-            sb.append("Your list is empty.\n");
-        } else {
-            sb.append("Here are the tasks in your list:\n");
-            for (int i = 0; i < tasks.size(); i++) {
-                sb.append(i + 1).append(". ").append(tasks.get(i)).append("\n");
-            }
+            return boxLines("Your list is empty.");
         }
-        sb.append(LINE);
-        return sb.toString();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Here are the tasks in your list:\n");
+        for (int i = 0; i < tasks.size(); i++) {
+            sb.append(i + 1).append(". ").append(tasks.get(i)).append("\n");
+        }
+        return box(sb.toString().trim());
     }
 
     private String formatHello() {
-        return LINE + "\n"
-                + "Hi! 🙂\n"
-                + "Type 'help' to see what I can do.\n"
-                + LINE;
+        return boxLines(
+                "Hi! 🙂",
+                "Type 'help' to see what I can do."
+        );
     }
 
     private String formatHelp() {
-        return LINE + "\n"
-                + "Here are the commands you can use:\n"
-                + "  list\n"
-                + "  todo <description>\n"
-                + "  deadline <description> /by <time>\n"
-                + "  event <description> /from <time> /to <time>\n"
-                + "  mark <task number>\n"
-                + "  unmark <task number>\n"
-                + "  delete <task number>\n"
-                + "  find <keyword>\n"
-                + "  priority <task number> <high|med|low|none>\n"
-                + "  bye\n"
-                + LINE;
-    }
-
-    private String handlePriority(String input) {
-        try {
-            Object[] parsed = Parser.parsePriority(input, tasks.size());
-            int idx = (int) parsed[0];
-            Priority p = (Priority) parsed[1];
-
-            assert idx >= 0 && idx < tasks.size() : "Priority index out of bounds: " + idx;
-
-            Task t = tasks.get(idx);
-            t.setPriority(p);
-            saveQuietly();
-
-            return LINE + "\n"
-                    + "OK. I've set the priority:\n"
-                    + "  " + t + "\n"
-                    + LINE;
-        } catch (IllegalArgumentException e) {
-            return formatError(e.getMessage());
-        } catch (Exception e) {
-            return formatError(MSG_PRIORITY_FORMAT);
-        }
+        return boxLines(
+                "Here are the commands you can use:",
+                "  list",
+                "  todo <description>",
+                "  deadline <description> /by <time>",
+                "  event <description> /from <time> /to <time>",
+                "  mark <task number>",
+                "  unmark <task number>",
+                "  delete <task number>",
+                "  find <keyword>",
+                "  bye"
+        );
     }
 
     private String handleMark(String input) {
         try {
-            int idx = Parser.parseIndex(input, tasks.size(), "mark");
+            int idx = Parser.parseIndex(input, tasks.size(), CMD_MARK);
             assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
+
             Task t = tasks.get(idx);
             t.markAsDone();
             saveQuietly();
 
-            return LINE + "\n"
-                    + "Nice! I've marked this task as done:\n"
-                    + "  " + t + "\n"
-                    + LINE;
+            return boxLines(
+                    "Nice! I've marked this task as done:",
+                    "  " + t
+            );
         } catch (IllegalArgumentException e) {
             return formatError(e.getMessage());
-        } catch (Exception e) {
-            return formatError("Please give a valid task number, e.g. mark 2");
         }
     }
 
     private String handleUnmark(String input) {
         try {
-            int idx = Parser.parseIndex(input, tasks.size(), "unmark");
+            int idx = Parser.parseIndex(input, tasks.size(), CMD_UNMARK);
             assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
+
             Task t = tasks.get(idx);
             t.markAsNotDone();
             saveQuietly();
 
-            return LINE + "\n"
-                    + "OK, I've marked this task as not done yet:\n"
-                    + "  " + t + "\n"
-                    + LINE;
+            return boxLines(
+                    "OK, I've marked this task as not done yet:",
+                    "  " + t
+            );
         } catch (IllegalArgumentException e) {
             return formatError(e.getMessage());
-        } catch (Exception e) {
-            return formatError("Please give a valid task number, e.g. unmark 2");
         }
     }
 
     private String handleDelete(String input) {
         try {
-            int idx = Parser.parseIndex(input, tasks.size(), "delete");
+            int idx = Parser.parseIndex(input, tasks.size(), CMD_DELETE);
             assert idx >= 0 && idx < tasks.size() : "Parser returned out-of-range index: " + idx;
+
             Task t = tasks.remove(idx);
             saveQuietly();
 
-            return LINE + "\n"
-                    + "Noted. I've removed this task:\n"
-                    + "  " + t + "\n"
-                    + "Now you have " + tasks.size() + " tasks in the list.\n"
-                    + LINE;
+            return boxLines(
+                    "Noted. I've removed this task:",
+                    "  " + t,
+                    "Now you have " + tasks.size() + " tasks in the list."
+            );
         } catch (IllegalArgumentException e) {
             return formatError(e.getMessage());
-        } catch (Exception e) {
-            return formatError("Please give a valid task number, e.g. delete 2");
         }
     }
 
@@ -249,6 +201,8 @@ public class Peggy {
         try {
             String desc = Parser.parseTodoDesc(input);
             Task t = new ToDo(desc);
+            assert t != null : "Created ToDo task should not be null";
+
             tasks.add(t);
             saveQuietly();
 
@@ -262,7 +216,12 @@ public class Peggy {
         try {
             String[] dl = Parser.parseDeadline(input);
             assert dl.length == 2 : "Deadline parse should return [desc, by]";
+            assert dl[0] != null && !dl[0].isBlank() : "Deadline description should not be blank";
+            assert dl[1] != null && !dl[1].isBlank() : "Deadline by should not be blank";
+
             Task t = new Deadline(dl[0], dl[1]);
+            assert t != null : "Created Deadline task should not be null";
+
             tasks.add(t);
             saveQuietly();
 
@@ -276,7 +235,13 @@ public class Peggy {
         try {
             String[] ev = Parser.parseEvent(input);
             assert ev.length == 3 : "Event parse should return [desc, from, to]";
+            assert ev[0] != null && !ev[0].isBlank() : "Event description should not be blank";
+            assert ev[1] != null && !ev[1].isBlank() : "Event from should not be blank";
+            assert ev[2] != null && !ev[2].isBlank() : "Event to should not be blank";
+
             Task t = new Event(ev[0], ev[1], ev[2]);
+            assert t != null : "Created Event task should not be null";
+
             tasks.add(t);
             saveQuietly();
 
@@ -291,33 +256,42 @@ public class Peggy {
             String keyword = Parser.parseFindKeyword(input);
             TaskList matches = tasks.find(keyword);
 
-            StringBuilder sb = new StringBuilder();
-            sb.append(LINE).append("\n");
-            sb.append("Here are the matching tasks in your list:\n");
             if (matches.isEmpty()) {
-                sb.append("(none)\n");
-            } else {
-                for (int i = 0; i < matches.size(); i++) {
-                    sb.append(i + 1).append(". ").append(matches.get(i)).append("\n");
-                }
+                return boxLines(
+                        "Here are the matching tasks in your list:",
+                        "(none)"
+                );
             }
-            sb.append(LINE);
-            return sb.toString();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("Here are the matching tasks in your list:\n");
+            for (int i = 0; i < matches.size(); i++) {
+                sb.append(i + 1).append(". ").append(matches.get(i)).append("\n");
+            }
+            return box(sb.toString().trim());
         } catch (IllegalArgumentException e) {
             return formatError(e.getMessage());
         }
     }
 
     private String formatAdded(Task t) {
-        return LINE + "\n"
-                + "Got it. I've added this task:\n"
-                + "  " + t + "\n"
-                + "Now you have " + tasks.size() + " tasks in the list.\n"
-                + LINE;
+        return boxLines(
+                "Got it. I've added this task:",
+                "  " + t,
+                "Now you have " + tasks.size() + " tasks in the list."
+        );
     }
 
     private String formatError(String msg) {
+        return box(msg);
+    }
+
+    private String box(String msg) {
         return LINE + "\n" + msg + "\n" + LINE;
+    }
+
+    private String boxLines(String... lines) {
+        return box(String.join("\n", lines));
     }
 
     private void saveQuietly() {

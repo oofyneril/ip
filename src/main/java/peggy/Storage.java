@@ -128,23 +128,23 @@ public class Storage {
 
     private Task parseTaskByType(String type, String[] parts) {
         switch (type) {
-            case TYPE_TODO:
-                return new ToDo(parts[2]);
+        case TYPE_TODO:
+            return new ToDo(parts[2]);
 
-            case TYPE_DEADLINE:
-                if (parts.length < MIN_FIELDS_DEADLINE) {
-                    return null;
-                }
-                return new Deadline(parts[2], parts[3]);
-
-            case TYPE_EVENT:
-                if (parts.length < MIN_FIELDS_EVENT) {
-                    return null;
-                }
-                return new Event(parts[2], parts[3], parts[4]);
-
-            default:
+        case TYPE_DEADLINE:
+            if (parts.length < MIN_FIELDS_DEADLINE) {
                 return null;
+            }
+            return new Deadline(parts[2], parts[3]);
+
+        case TYPE_EVENT:
+            if (parts.length < MIN_FIELDS_EVENT) {
+                return null;
+            }
+            return new Event(parts[2], parts[3], parts[4]);
+
+        default:
+            return null;
         }
     }
 

@@ -1,23 +1,43 @@
 package peggy;
 
+/**
+ * Represents supported command words.
+ */
 public enum CommandType {
-    BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, HELP, HELLO, Priority, UNKNOWN;
+    BYE, LIST, MARK, UNMARK, DELETE, TODO, DEADLINE, EVENT, FIND, HELP, HELLO, UNKNOWN;
 
+    /**
+     * Converts a command word into a {@code CommandType}.
+     *
+     * @param word Command word.
+     * @return Matching command type or {@code UNKNOWN}.
+     */
     public static CommandType from(String word) {
-        if (word == null) return UNKNOWN;
+        if (word == null) {
+            return UNKNOWN;
+        }
 
         switch (word.toLowerCase()) {
-        case "bye": return BYE;
-        case "list": return LIST;
-        case "mark": return MARK;
-        case "unmark": return UNMARK;
-        case "delete": return DELETE;
-        case "todo": return TODO;
-        case "deadline": return DEADLINE;
-        case "event": return EVENT;
-        case "find": return FIND;
-        case "help": return HELP;
-        case "priority": return Priority;
+        case "bye":
+            return BYE;
+        case "list":
+            return LIST;
+        case "mark":
+            return MARK;
+        case "unmark":
+            return UNMARK;
+        case "delete":
+            return DELETE;
+        case "todo":
+            return TODO;
+        case "deadline":
+            return DEADLINE;
+        case "event":
+            return EVENT;
+        case "find":
+            return FIND;
+        case "help":
+            return HELP;
         case "hi":
         case "hello":
             return HELLO;
