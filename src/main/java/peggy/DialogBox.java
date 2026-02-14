@@ -41,6 +41,11 @@ public class DialogBox extends HBox {
         nameLabel.getStyleClass().add("name-label");
     }
 
+    public void setText(String text) {
+        dialog.setText(text);
+    }
+
+
     private void flip() {
         ObservableList<Node> nodes = FXCollections.observableArrayList(getChildren());
         Collections.reverse(nodes);

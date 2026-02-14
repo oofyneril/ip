@@ -16,7 +16,8 @@
                     AnchorPane.topAnchor="0.0"
                     AnchorPane.leftAnchor="0.0"
                     AnchorPane.rightAnchor="0.0"
-                    AnchorPane.bottomAnchor="50.0">
+                    AnchorPane.bottomAnchor="50.0"
+                    pannable="true">
             <content>
                 <VBox fx:id="dialogContainer" spacing="10.0" prefWidth="780.0"/>
             </content>

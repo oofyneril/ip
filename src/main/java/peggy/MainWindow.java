@@ -1,23 +1,24 @@
 package peggy;
 
-import java.util.Objects;
-
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
 import javafx.animation.PauseTransition;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
+import java.util.Objects;
+
 public class MainWindow {
 
-    private static final Duration IDLE_TIMEOUT = Duration.minutes(3); // change this
-    private static final Duration CLOSE_DELAY = Duration.seconds(2);
+    private static final Duration BOT_TYPING_TIME = Duration.millis(1010);
+    private static final Duration EXIT_DELAY = Duration.millis(600);
 
     @FXML private ScrollPane scrollPane;
     @FXML private VBox dialogContainer;
@@ -29,97 +30,87 @@ public class MainWindow {
     private final Image userImg = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/user.png")));
     private final Image botImg  = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/images/bot.png")));
 
-    private final PauseTransition idleTimer = new PauseTransition(IDLE_TIMEOUT);
-
     @FXML
     public void initialize() {
         scrollPane.vvalueProperty().bind(dialogContainer.heightProperty());
-
-        idleTimer.setOnFinished(e -> handleTimeout());
-
-        // Reset timeout on user activity in the input area
-        userInput.addEventFilter(KeyEvent.ANY, e -> resetIdleTimer());
-        userInput.addEventFilter(MouseEvent.ANY, e -> resetIdleTimer());
-
-        // If you want: also reset when clicking Send (extra safety)
-        sendButton.addEventFilter(MouseEvent.ANY, e -> resetIdleTimer());
     }
 
     public void setPeggy(Peggy peggy) {
         this.peggy = peggy;
-
         dialogContainer.getChildren().add(
                 DialogBox.getBotDialog(cleanForGui(peggy.getWelcomeMessage()), botImg)
         );
-
-        resetIdleTimer(); // start counting once app is ready
     }
 
     @FXML
     private void handleUserInput() {
-        resetIdleTimer();
-
         String input = userInput.getText();
 
-        // if blank, show Peggy error without creating an empty user bubble
+        // If blank: no user bubble, but still show bot typing then error reply
         if (input == null || input.trim().isBlank()) {
-            dialogContainer.getChildren().add(
-                    DialogBox.getBotDialog(cleanForGui(peggy.getResponse(input)), botImg)
-            );
+            String response = cleanForGui(peggy.getResponse(input));
             userInput.clear();
+            showBotTypingThenReply(response, false);
             return;
         }
 
-        // user bubble
+        // User bubble
         dialogContainer.getChildren().add(DialogBox.getUserDialog(input, userImg));
 
-        String response = cleanForGui(peggy.getResponse(input));
-        dialogContainer.getChildren().add(DialogBox.getBotDialog(response, botImg));
-
         boolean isBye = peggy.isExitCommand(input);
+        String response = cleanForGui(peggy.getResponse(input));
+
         userInput.clear();
 
-        if (isBye) {
-            idleTimer.stop();
-            userInput.setDisable(true);
-            sendButton.setDisable(true);
-
-            PauseTransition delay = new PauseTransition(Duration.millis(600));
-            delay.setOnFinished(e -> Platform.exit());
-            delay.play();
-        }
+        // Show typing animation before showing the bot reply
+        showBotTypingThenReply(response, isBye);
     }
 
-    private void resetIdleTimer() {
-        // If peggy isn't set yet, don't start the timer
-        if (peggy == null) {
-            return;
-        }
-        idleTimer.stop();
-        idleTimer.setDuration(IDLE_TIMEOUT);
-        idleTimer.playFromStart();
-    }
-
-    private void handleTimeout() {
-        // Prevent repeated firing
-        idleTimer.stop();
-
-        dialogContainer.getChildren().add(
-                DialogBox.getBotDialog("Session timed out due to inactivity. Closing…", botImg)
-        );
-
+    private void showBotTypingThenReply(String response, boolean exitAfter) {
+        // Disable input while "typing" (prevents spamming multiple sends)
         userInput.setDisable(true);
         sendButton.setDisable(true);
 
-        PauseTransition closeDelay = new PauseTransition(CLOSE_DELAY);
-        closeDelay.setOnFinished(e -> Platform.exit());
-        closeDelay.play();
+        // Create a temporary typing bubble
+        DialogBox typing = DialogBox.getBotDialog("...", botImg);
+        typing.getStyleClass().add("typing-bubble");
+        dialogContainer.getChildren().add(typing);
+
+        // Animate dots: ".", "..", "..."
+        Timeline dots = new Timeline(
+                new KeyFrame(Duration.ZERO, e -> typing.setText(".")),
+                new KeyFrame(Duration.millis(200), e -> typing.setText("..")),
+                new KeyFrame(Duration.millis(400), e -> typing.setText("...")),
+                new KeyFrame(Duration.millis(600), e -> typing.setText(".")),
+                new KeyFrame(Duration.millis(800), e -> typing.setText("..")),
+                new KeyFrame(Duration.millis(1000), e -> typing.setText("..."))
+        );
+        dots.setCycleCount(Animation.INDEFINITE);
+        dots.play();
+
+        // After a short delay, replace typing bubble with real reply
+        PauseTransition wait = new PauseTransition(BOT_TYPING_TIME);
+        wait.setOnFinished(e -> {
+            dots.stop();
+            dialogContainer.getChildren().remove(typing);
+            dialogContainer.getChildren().add(DialogBox.getBotDialog(response, botImg));
+
+            if (exitAfter) {
+                PauseTransition delay = new PauseTransition(EXIT_DELAY);
+                delay.setOnFinished(ev -> Platform.exit());
+                delay.play();
+                return;
+            }
+
+            userInput.setDisable(false);
+            sendButton.setDisable(false);
+            userInput.requestFocus();
+        });
+        wait.play();
     }
 
     private static String cleanForGui(String s) {
-        if (s == null) {
-            return "";
-        }
+        if (s == null) return "";
         return s.replaceAll("(?m)^-+\\s*$\\R?", "").trim();
     }
 }

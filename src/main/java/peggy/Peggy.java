@@ -132,16 +132,16 @@ public class Peggy {
     private String formatHelp() {
         return boxLines(
                 "Here are the commands you can use:",
-                "  1) list — view all tasks",
-                "  2) todo <description> — add a todo task",
-                "  3) deadline <description> /by <time> — add a deadline task",
-                "  4) event <description> /from <time> /to <time> — add an event task",
-                "  5) mark <task number> — mark a task as done",
-                "  6) unmark <task number> — mark a task as not done",
-                "  7) delete <task number> — remove a task",
-                "  8) find <keyword> — search tasks by keyword",
-                "  9) priority <task number> <priority> — set task priority",
-                " 10) bye — exit the app"
+                "  1) list",
+                "  2) todo <description>",
+                "  3) deadline <description> /by <time>",
+                "  4) event <description> /from <time> /to <time>",
+                "  5) mark <task number>",
+                "  6) unmark <task number>",
+                "  7) delete <task number>",
+                "  8) find <keyword>",
+                "  9) priority <task number> <priority>",
+                " 10) bye"
         );
     }
 

@@ -39,5 +39,10 @@
 /* ===== Name label under avatar ===== */
 .name-label {
     -fx-font-size: 10px;
-    -fx-opacity: 0.75;
+    -fx-opacity: 1;
+}
+
+.typing-bubble .label {
+    -fx-opacity: 1;
+    -fx-font-style: italic;
 }
