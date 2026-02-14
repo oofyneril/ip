@@ -242,26 +242,4 @@ This usually means the import is missing in FXML. Ensure your FXML includes:
 
 Or use `fx:root type="javafx.scene.layout.HBox"` correctly.
 
-### GUI doesn’t close on `bye`
-Make sure your GUI handler checks `peggy.isExitCommand(input)` and calls `Platform.exit()` after a short delay.
-
----
-
-## Publishing the User Guide on GitHub Pages
-
-1. Commit this file to `docs/README.md`.
-2. Go to your fork on GitHub.
-3. Go to **Settings** → **Pages**.
-4. Set:
-    - **Source**: `Deploy from a branch`
-    - **Branch**: `master`
-    - **Folder**: `/docs`
-5. Save.
-
-Your UG will be at:
-
-- `https://{your-username}.github.io/{repo-name}/`
-
-Note: GitHub Pages may take a few minutes to update. After it updates, check the **HTML-rendered** page to confirm formatting is correct.
-
 ---
