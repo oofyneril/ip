@@ -4,17 +4,23 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.scene.layout.HBox"
          xmlns="http://javafx.com/javafx/17"
          xmlns:fx="http://javafx.com/fxml/1"
          alignment="TOP_RIGHT"
          spacing="12.0">
+
     <children>
         <Label fx:id="dialog" wrapText="true"/>
-        <ImageView fx:id="displayPicture"
-                   fitWidth="64.0" fitHeight="64.0"
-                   preserveRatio="true"/>
+        <VBox alignment="TOP_CENTER" spacing="4.0">
+            <ImageView fx:id="displayPicture"
+                       fitWidth="64.0"
+                       fitHeight="64.0"
+                       preserveRatio="true"/>
+            <Label fx:id="nameLabel" text=""/>
+        </VBox>
     </children>
 
     <padding>

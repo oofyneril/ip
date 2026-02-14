@@ -41,8 +41,9 @@ public class Peggy {
 
     public String getWelcomeMessage() {
         return boxLines(
-                "Hello! I'm Peggy",
-                "What can I do for you?"
+                "Hello! I'm Peggy, your personal assistant.",
+                "",
+                "I can manage your todos, deadlines, and events — add them, list them, mark them done, and find them."
         );
     }
 
@@ -123,7 +124,7 @@ public class Peggy {
 
     private String formatHello() {
         return boxLines(
-                "Hi! 🙂",
+                "Hi! How may I assist you? 🙂",
                 "Type 'help' to see what I can do."
         );
     }
@@ -131,16 +132,16 @@ public class Peggy {
     private String formatHelp() {
         return boxLines(
                 "Here are the commands you can use:",
-                "  list",
-                "  todo <description>",
-                "  deadline <description> /by <time>",
-                "  event <description> /from <time> /to <time>",
-                "  mark <task number>",
-                "  unmark <task number>",
-                "  delete <task number>",
-                "  find <keyword>",
-                "  priority <task number> <priority>",
-                "  bye"
+                "  1) list — view all tasks",
+                "  2) todo <description> — add a todo task",
+                "  3) deadline <description> /by <time> — add a deadline task",
+                "  4) event <description> /from <time> /to <time> — add an event task",
+                "  5) mark <task number> — mark a task as done",
+                "  6) unmark <task number> — mark a task as not done",
+                "  7) delete <task number> — remove a task",
+                "  8) find <keyword> — search tasks by keyword",
+                "  9) priority <task number> <priority> — set task priority",
+                " 10) bye — exit the app"
         );
     }
 

@@ -18,6 +18,7 @@ public class DialogBox extends HBox {
 
     @FXML private Label dialog;
     @FXML private ImageView displayPicture;
+    @FXML private Label nameLabel;
 
     private DialogBox(String text, Image img) {
         try {
@@ -25,18 +26,19 @@ public class DialogBox extends HBox {
             loader.setRoot(this);
             loader.setController(this);
             loader.load();
+            setMaxWidth(Double.MAX_VALUE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         dialog.setText(text);
-
         dialog.setWrapText(true);
         dialog.setMaxWidth(320);
-
         dialog.getStyleClass().add("bubble");
 
         displayPicture.setImage(img);
+
+        nameLabel.getStyleClass().add("name-label");
     }
 
     private void flip() {
@@ -48,6 +50,7 @@ public class DialogBox extends HBox {
 
     public static DialogBox getUserDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
+        db.nameLabel.setText("User");
         db.dialog.getStyleClass().add("user-bubble");
         db.setAlignment(Pos.TOP_RIGHT);
         return db;
@@ -55,8 +58,10 @@ public class DialogBox extends HBox {
 
     public static DialogBox getBotDialog(String text, Image img) {
         DialogBox db = new DialogBox(text, img);
+        db.nameLabel.setText("Peggy");
         db.dialog.getStyleClass().add("bot-bubble");
         db.flip();
+        db.setAlignment(Pos.TOP_LEFT);
         return db;
     }
 }
