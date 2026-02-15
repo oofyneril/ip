@@ -24,6 +24,7 @@ public class Peggy {
     private final Storage storage;
     private final TaskList tasks;
 
+    //Constructor
     public Peggy(String filePath) {
         this.storage = new Storage(filePath);
 
