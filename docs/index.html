@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Peggy — Task Chatbot</title>
+    <meta name="description" content="Peggy is a friendly task chatbot with a clean GUI: add tasks, deadlines, events, and stay organized." />
+    <link rel="stylesheet" href="assets/styles.css" />
+</head>
+
+<body>
+<header class="site-header">
+    <div class="container header-row">
+        <a class="brand" href="#top" aria-label="Peggy home">
+            <span class="brand-mark">P</span>
+            <span class="brand-name">Peggy</span>
+        </a>
+
+        <button class="nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="primary-nav">
+            <span></span><span></span><span></span>
+        </button>
+
+        <nav class="nav" id="primary-nav" aria-label="Primary navigation">
+            <a class="nav-link active" href="#top">Home</a>
+            <a class="nav-link" href="#features">Features</a>
+            <a class="nav-link" href="#how">How it works</a>
+            <a class="nav-link" href="#contact">Contact</a>
+
+            <div class="nav-spacer"></div>
+
+            <!-- show-only -->
+            <a class="nav-link" href="#contact">Log in</a>
+            <a class="btn btn-primary" href="#contact">Sign up</a>
+        </nav>
+    </div>
+</header>
+
+<main id="top">
+    <!-- HERO -->
+    <section class="hero">
+        <div class="container hero-grid">
+            <div class="hero-copy">
+                <div class="badge">Task Chatbot • iP</div>
+                <h1>Your tasks, in a chat.</h1>
+                <img class="shot" src="peggy_bot.png" alt="Peggy GUI screenshot" />
+                <p class="lead">
+                    Peggy helps you <b>add</b>, <b>track</b>, and <b>organize</b> tasks (todo, deadline, event)
+                    through a clean chatbot interface — with a GUI that’s easy to scan.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="#how">See how it works</a>
+                    <a class="btn btn-ghost" href="#features">Explore features</a>
+                </div>
+
+            </div>
+
+            <div class="hero-right">
+                <div class="card card-glass">
+                    <div class="card-top">
+                        <span class="pill">Try these</span>
+                        <span class="pill pill-muted">Examples</span>
+                    </div>
+
+                    <pre class="cmd">todo revise CS2105
+deadline submit iP /by 2026-02-20 23:59
+event team meeting /from 2026-02-18 14:00 /to 2026-02-18 16:00
+list
+find revise
+bye</pre>
+
+                    <div class="hint">
+                        Tip: type <code>help</code> anytime to see the full command list.
+                    </div>
+                </div>
+                <div class="benefits">
+                    <div class="benefit-pill">
+                        <span class="benefit-icon" aria-hidden="true">✅</span>
+                        <div class="benefit-text">
+                            <div class="benefit-title">Fast command input</div>
+                            <div class="benefit-desc">Add tasks in one line — no menus or forms.</div>
+                        </div>
+                    </div>
+
+                    <div class="benefit-pill">
+                        <span class="benefit-icon" aria-hidden="true">✅</span>
+                        <div class="benefit-text">
+                            <div class="benefit-title">Clear chat bubbles</div>
+                            <div class="benefit-desc">User and bot messages are separated for quick scanning.</div>
+                        </div>
+                    </div>
+
+                    <div class="benefit-pill">
+                        <span class="benefit-icon" aria-hidden="true">✅</span>
+                        <div class="benefit-text">
+                            <div class="benefit-title">Search with <code>find</code></div>
+                            <div class="benefit-desc">Locate tasks instantly by keyword.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-bg" aria-hidden="true"></div>
+    </section>
+
+    <!-- FEATURES -->
+    <section class="section" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>Features</h2>
+                <p>Everything you need for daily task tracking — without a complicated UI.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="feature">
+                    <h3>Task types</h3>
+                    <p>Add <b>ToDos</b>, <b>Deadlines</b>, and <b>Events</b> with simple commands.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>Manage in seconds</h3>
+                    <p><code>mark</code>, <code>unmark</code>, <code>delete</code>, <code>list</code> — instant updates.</p>
+                </div>
+
+                <div class="feature">
+                    <h3>Search</h3>
+                    <p>Use <code>find</code> to filter tasks quickly by keyword.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SCREENSHOT / HOW -->
+    <section class="section section-alt" id="how">
+        <div class="container">
+            <div class="section-title">
+                <h2>See Peggy in action</h2>
+                <p>Clean layout + chat bubbles = easier reading and less clutter.</p>
+            </div>
+
+            <div class="shot-wrap">
+
+                <div class="callout c1">
+                    <div class="callout-box">
+                        <b>Chat bubbles</b>
+                        <span>Readable conversations</span>
+                    </div>
+                </div>
+
+                <div class="callout c2">
+                    <div class="callout-box">
+                        <b>Bot vs User</b>
+                        <span>Different sides</span>
+                    </div>
+                </div>
+
+                <div class="callout c3">
+                    <div class="callout-box">
+                        <b>Commands</b>
+                        <span>Todo / deadline / event</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div>
+                        <h3>Add tasks</h3>
+                        <p>Use <code>todo</code>, <code>deadline</code>, <code>event</code> to create items fast.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div>
+                        <h3>Track progress</h3>
+                        <p>Use <code>mark</code>/<code>unmark</code> and <code>list</code> to stay on top.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div>
+                        <h3>Find instantly</h3>
+                        <p>Use <code>find</code> to locate tasks without scrolling forever.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="section" id="contact">
+        <div class="container">
+            <div class="section-title">
+                <h2>Contact</h2>
+                <p>Demo-only section (single page). Replace details anytime.</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="card padded">
+                    <h3>Get updates</h3>
+                    <p class="muted">Leave your email (demo). You can wire this up later.</p>
+                    <form class="form" onsubmit="event.preventDefault(); document.getElementById('ok').textContent='Thanks! (Demo only)'; this.reset();">
+                        <label>Email</label>
+                        <input type="email" required placeholder="you@example.com" />
+                        <button class="btn btn-primary" type="submit">Notify me</button>
+                        <p class="muted small" id="ok"></p>
+                    </form>
+                </div>
+
+                <div class="card padded">
+                    <h3>Links</h3>
+                    <p class="muted">Put your repo / release link here.</p>
+                    <div class="links">
+                        <a class="link" href="#" onclick="return false;">GitHub Repository</a>
+                        <a class="link" href="#" onclick="return false;">Latest Release (JAR)</a>
+                        <a class="link" href="#" onclick="return false;">User Guide</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <div class="container footer-row">
+        <div class="muted">© <span id="year"></span> Peggy</div>
+        <div class="footer-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>
