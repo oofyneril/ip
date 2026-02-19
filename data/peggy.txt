@@ -1,4 +1,5 @@
 T | 1 | borrow book
-D | 0 | return book | 2019-12-02T18:00
+D | 1 | return book | 2019-12-02T18:00
 T | 0 | Assignment
 T | 1 | cook
+T | 0 | read book
