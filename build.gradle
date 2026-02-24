@@ -5,7 +5,7 @@ plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
     id 'checkstyle'
-    id 'org.openjfx.javafxplugin' version '0.1.0'
+    // REMOVE: id 'org.openjfx.javafxplugin'
 }
 
 repositories {
@@ -16,14 +16,20 @@ checkstyle {
     toolVersion = '11.0.0'
 }
 
-javafx {
-    version = '17.0.14'
-    modules = [ 'javafx.controls', 'javafx.fxml' ]
-}
+def javafxVersion = '17.0.14'
+def javafxModules = ['base', 'graphics', 'controls', 'fxml']
+def javafxPlatforms = ['win', 'linux', 'mac', 'mac-aarch64']
 
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+
+    // Include JavaFX natives for Windows + Linux + macOS (x64 + Apple Silicon)
+    javafxModules.each { m ->
+        javafxPlatforms.each { p ->
+            implementation "org.openjfx:javafx-${m}:${javafxVersion}:${p}"
+        }
+    }
 }
 
 test {
@@ -37,8 +43,10 @@ application {
 shadowJar {
     archiveBaseName = "peggy"
     archiveClassifier = null
-}
 
+    // Avoid build failures due to duplicate resources across platform jars
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
 run {
     jvmArgs '-ea'
     if (project.hasProperty("input")) {
